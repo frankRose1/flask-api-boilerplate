@@ -1,0 +1,9 @@
+.vscode
+.cache
+.git
+.coverage
+.pytest_cache
+**/__pycache__
+*Dockerfile*
+*docker-compose*
+.dockerignore

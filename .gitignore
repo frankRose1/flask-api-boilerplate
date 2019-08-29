@@ -1,0 +1,7 @@
+.env
+.vscode
+.coverage
+.cache
+*.pyc
+.pytest_cache
+instance/settings.py
