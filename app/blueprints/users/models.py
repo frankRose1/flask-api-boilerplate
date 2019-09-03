@@ -48,3 +48,18 @@ class User(ResourceMixin, db.model):
         """
         if plaintext_password:
             return generate_password_hash(plaintext_password)
+
+    def authenticated(self, with_password=True, password=''):
+        """
+        Ensure a user is authenticated, and optionally check their password
+
+        :param with_password: Optionally check user's password
+        :type with_password: bool
+        :param password: Optionally verify this as their password
+        :type password: str
+        :return: bool
+        """
+        if with_password:
+            return check_password_hash(self.password, password)
+
+        return True

@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
 
+from app.api.auth import AuthView
+from app.api.user import UsersView
 from app.extensions import (
     jwt,
     db,
@@ -25,6 +27,8 @@ def create_app(settings_override=None):
         app.config.update(settings_override)
 
     # Register API views
+    AuthView.register(app)
+    UsersView.register(app)
 
     jwt_callbacks()
 
