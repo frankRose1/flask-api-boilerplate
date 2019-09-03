@@ -1,5 +1,10 @@
-from flask import Flask
+from flask import Flask, jsonify
 
+from app.extensions import (
+    jwt,
+    db,
+    ma
+)
 
 def create_app(settings_override=None):
     """
@@ -21,6 +26,8 @@ def create_app(settings_override=None):
 
     # Register API views
 
+    jwt_callbacks()
+
     # Add extensions
     extensions(app)
 
@@ -35,4 +42,66 @@ def extensions(app):
     :param app: Flask application instance
     :return: None
     """
-    pass
+    jwt.init_app(app)
+    db.init_app(app)
+    ma.init_app(app)
+
+    return None
+
+
+def jwt_callbacks():
+    """
+    Set up custom behavior for JWT authentication.
+
+    :return: None
+    """
+    @jwt.user_loader_callback_loader
+    def user_loader_callback(identity):
+        """
+        This is called when a user accesses a protected endpoint and it will
+        populate "flask_jwt.current_user" with the loaded user.
+
+        :param identity: Is which ever unique identity you chose when creating
+        the access token.
+        :return: User model instance
+        """
+        return User.query.filter(User.username == identity).first()
+
+    @jwt.user_claims_loader
+    def add_claims_to_access_token_callback(identity):
+        """
+        This is called when ever an access token is created. It will add any
+        additional info regarding the user to the access token. For example
+        you may use it to determine if a user has admin permissions or not
+
+        :param identity: Is which ever unique identity you chose when creating
+        the access token.
+        :return: dict
+        """
+        user =  User.query.filter(User.username == identity).first()
+        return {
+            'role': user.role
+        }
+
+    @jwt.unauthorized_loader
+    def jwt_unauthorized_callback(error):
+        response = {
+            'error': {
+                'message': 'Auth token was not provided.',
+                'detail': error
+            }
+        }
+
+        return jsonify(response), 401
+
+    @jwt.expired_token_loader
+    def jwt_expired_token_callback(error):
+        response = {
+            'error': {
+                'message': 'Auth token has expired'
+            }
+        }
+
+        return jsonify(response), 401
+
+    return None
