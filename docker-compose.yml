@@ -1,0 +1,46 @@
+version: '2'
+
+services:
+  redis:
+    image: 'redis:3.0-alpine'
+    command: 'redis-server --requirepass devPassword'
+    volumes:
+      - 'redis:/var/lib/redis/data'
+    ports:
+      - '6379:6379'
+
+  postgres:
+    image: 'postgres:10.3-alpine'
+    env_file:
+      - '.env'
+    volumes:
+      - 'postgres:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
+
+  api:
+    build: .
+    command: >
+      gunicorn -b 0.0.0.0:8000
+        --access-logfile -
+        --reload
+        "app.app:create_app()"
+    depends_on:
+      - 'postgres'
+    env_file:
+      - '.env'
+    ports:
+      - '8000:8000'
+    volumes:
+      - '.:/app'
+
+  celery:
+    build: .
+    env_file:
+      - '.env'
+    volumes:
+      - '.:/app'
+
+volumes:
+  redis: {}
+  postgres: {}
