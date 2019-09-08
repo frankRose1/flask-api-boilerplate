@@ -49,6 +49,7 @@ services:
       context: "."
       args:
         - "FLASK_ENV=${FLASK_ENV:-production}"
+    command: celery worker -B -l info -A app.blueprints.user.tasks
     depends_on:
       - "postgres"
       - "redis"

@@ -1,5 +1,6 @@
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, jsonify
+from celery import Celery
 
 from app.blueprints.user.models import User
 from app.api.auth import AuthView
@@ -11,9 +12,9 @@ from app.extensions import (
     ma
 )
 
-# This is where you put the path to your background tasks as a string
-# eg 'app.blueprints.user.tasks'
-CELERY_TASK_LIST = []
+CELERY_TASK_LIST = [
+    'app.blueprints.user.tasks',
+]
 
 
 def create_celery_app(app=None):
@@ -116,7 +117,7 @@ def jwt_callbacks():
         the access token.
         :return: dict
         """
-        user =  User.query.filter(User.username == identity).first()
+        user = User.query.filter(User.username == identity).first()
         return {
             'role': user.role
         }

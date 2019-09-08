@@ -5,7 +5,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from lib.util_sqlalchemy import ResourceMixin
 from app.extensions import db
 
-class User(ResourceMixin, db.model):
+
+class User(ResourceMixin, db.Model):
     ROLE = OrderedDict([
         ('member', 'Member'),
         ('admin', 'Admin')

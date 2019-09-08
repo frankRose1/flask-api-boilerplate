@@ -8,7 +8,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', None)
 
 SERVER_NAME = os.getenv('SERVER_NAME',
                         'localhost:{0}'.format(os.getenv('DOCKER_WEB_PORT',
-                                                          '8000'))))
+                                                          '8000')))
 
 # SQLALchemy
 pg_user = os.getenv('POSTGRES_USER', 'app')

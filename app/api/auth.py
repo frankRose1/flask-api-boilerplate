@@ -1,5 +1,6 @@
 from flask import request, jsonify
 from flask_jwt_extended import create_access_token
+from marshmallow import ValidationError
 
 from app.api import APIView
 from app.blueprints.user.models import User
@@ -11,16 +12,14 @@ class AuthView(APIView):
         json_data = request.get_json()
 
         if not json_data:
-            response = jsonify({
-                'error': 'Invalid input.'
-            })
+            response = jsonify({'error': 'Invalid input.'})
             return response, 400
 
-        data, errors = auth_schema.load(json_data)
-
-        if errors:
+        try:
+            data = auth_schema.load(json_data)
+        except ValidationError as err:
             response = jsonify({
-                'error': errors
+                'error': err.messages
             })
 
             return response, 422

@@ -1,4 +1,4 @@
-from marshmallow import fields, validate, ValidaionError
+from marshmallow import fields, validate, ValidationError
 
 from app.extensions import ma
 from app.blueprints.user.models import User
@@ -14,7 +14,7 @@ def ensure_unique_identity(data):
     """
     user = User.find_by_identity(data)
     if user:
-        raise ValidaionError('{0} already exists.'.format(data))
+        raise ValidationError('{0} already exists.'.format(data))
 
     return data
 
@@ -24,7 +24,7 @@ class RegistrationSchema(ma.Schema):
     username = fields.Str(required=True,
                           validate=[validate.Length(min=3, max=255),
                                     ensure_unique_identity,
-                                    validate.Regexp('^\w+$',
+                                    validate.Regexp(r'^\w+$',
                                     error=USERNAME_MESSAGE)])
     password = fields.Str(required=True,
                           validate=validate.Length(min=8, max=128))

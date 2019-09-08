@@ -51,3 +51,4 @@ tmtags
 
 # App ignores.
 .env
+celerybeat*

@@ -7,10 +7,10 @@ env variable
 ## Getting set up
 ### Build and run the app
 1) Change .env.example to .env
-2) Add/change the necessary env variables that your app needs
+2) Add/change the necessary env variables needed for the app
 3) Open a terminal configured to run Docker and run:
     - docker-compose down -v
     - docker-compose up --build
-    - docker-compose exec web flaskboilerplate db reset --with-testdb
-    - docker-compose exec web flaskboilerplate flake8
-    - docker-compose exec web flaskboilerplate test
+    - docker-compose exec web app db reset --with-testdb
+    - docker-compose exec web app flake8
+    - docker-compose exec web app test
