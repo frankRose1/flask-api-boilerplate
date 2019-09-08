@@ -1,12 +1,48 @@
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, jsonify
 
+from app.blueprints.user.models import User
 from app.api.auth import AuthView
 from app.api.user import UsersView
+from app.api.health_check import HealthyView
 from app.extensions import (
     jwt,
     db,
     ma
 )
+
+# This is where you put the path to your background tasks as a string
+# eg 'app.blueprints.user.tasks'
+CELERY_TASK_LIST = []
+
+
+def create_celery_app(app=None):
+    """
+    Create a new Celery object and sync the Celery config to the Flask app's
+    config. Wrap all tasks in the context of the Flask app.
+
+    :param app: Flask app
+    :return: Celery app
+    """
+    app = app or create_app()
+
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'],
+                    include=CELERY_TASK_LIST)
+
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            # if the db is needed inside a task app context must be set
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
 
 def create_app(settings_override=None):
     """
@@ -20,19 +56,17 @@ def create_app(settings_override=None):
 
     app.config.from_object('config.settings')
 
-    # use instance/settings.py(if it exists)
-    app.config.from_pyfile('settings.py', silent=True)
-
     if settings_override:
         app.config.update(settings_override)
 
+    middleware(app)
+
     # Register API views
+    HealthyView.register(app)
     AuthView.register(app)
     UsersView.register(app)
 
     jwt_callbacks()
-
-    # Add extensions
     extensions(app)
 
     return app
@@ -107,5 +141,19 @@ def jwt_callbacks():
         }
 
         return jsonify(response), 401
+
+    return None
+
+
+def middleware(app):
+    """
+    Register 0 or more middleware (mutates the app passed in)
+
+    :param app: Flask application instance
+    :return: None
+    """
+    # This is necessaary if you plan on using request.remote_addr and you
+    # happen to have a proxy in front of your server.
+    app.wsgi_app = ProxyFix(app.wsgi_app)
 
     return None
