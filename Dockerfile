@@ -24,6 +24,8 @@ ENV FLASK_ENV="${FLASK_ENV}" \
 
 COPY . .
 
+RUN pip install --editable .
+
 EXPOSE 8000
 
 CMD ["gunicorn", "-c", "python:config.gunicorn", "app.app:create_app()"]

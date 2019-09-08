@@ -4,7 +4,7 @@ from sqlalchemy import DateTime
 from sqlalchemy.types import TypeDecorator
 
 from lib.util_datetime import timezone_aware_datetime
-from vidme.extensions import db
+from app.extensions import db
 
 
 class AwareDateTime(TypeDecorator):
